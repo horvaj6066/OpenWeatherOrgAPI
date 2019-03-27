@@ -1,0 +1,130 @@
+'''Objective is to build a series of scatter plots to showcase the following relationships:
+* Temperature (F) vs. Latitude
+* Humidity (%) vs. Latitude
+* Cloudiness (%) vs. Latitude
+* Wind Speed (mph) vs. Latitude
+Latitude and longitude values are traditionally measured either in decimal degrees or in degrees, minutes, and seconds (DMS)
+. Latitude values are measured relative to the equator and range from -90° at the South Pole to +90° at the North Pole. 
+Longitude values are measured relative to the prime meridian. They range from -180° when traveling west to 180° when traveling 
+east. If the prime meridian is at Greenwich, then Australia, which is south of the equator and east of Greenwich, has 
+positive longitude values and negative latitude values.
+'''
+
+
+# Dependencies and Setup
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import requests
+import time
+import json
+
+from citipy import citipy
+
+# Import API key
+import api_keys
+#api_key= "&APPID="+"d8b938cd545e17ddc391a0139795627a"
+#2nd key was "9ee7b1ba545b34e6e00ec9daea9a9537"
+api_key= "&APPID="+"7d4c3db8161a5e03db16ac763263e5f4" #first part just goes before the api key
+#select our cities 
+
+# Output File (CSV)
+output_data_file = "output_data/cities.csv"
+
+#trying to load city codes with below 2 lines ********************************************************
+#with open('city.list.json') as json_file:  
+#    city_codes = json.load(json_file)
+
+# Range of latitudes and longitudes
+lat_range = (-90, 90)
+lng_range = (-180, 180)
+
+# List for holding lat_lngs and cities
+lat_lngs = []
+cities = []
+
+# Create a set of random lat and lng combinations
+lats = np.random.uniform(low=-90.000, high=90.000, size=1500)
+lngs = np.random.uniform(low=-180.000, high=180.000, size=1500)
+lat_lngs = zip(lats, lngs)
+
+# Identify nearest city for each lat, lng combination
+for lat_lng in lat_lngs:
+    city = citipy.nearest_city(lat_lng[0], lat_lng[1]).city_name
+    
+    # If the city is unique, then add it to a our cities list
+    if city not in cities:
+        cities.append(city)
+        #here we need to find the code from the city list json file 
+        
+
+# Print the city count to confirm sufficient count
+len(cities)
+print(cities[1])
+#**********API calls for openweathermap
+#city_url= api.openweathermap.org/data/2.5/weather?q={city name}
+#api.openweathermap.org/data/2.5/weather?q={city name},{country code}
+#url="api.openweathermap.org/data/2.5/weather?"+str(api_keys)
+
+#cities=["london,uk","san francisco,us","umea,se","new york,us","toronto,ca","vancouver,ca"]
+
+#url="http://api.openweathermap.org/data/2.5/weather?id=524901&APPID="+api_key
+url="http://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID="+api_key  
+
+weather_check=(requests.get(url))
+
+print(weather_check)
+print(type(weather_check))
+
+if check_connection.status_code==200:
+    print("Status: connection to openweathermap.org is established" )
+
+#print(weather_check.headers['content-type'])
+#weather_check.encoding
+#print(weather_check.text)
+
+weather_check = requests.get(url).json()  #get city weather 
+#print(weather_check)
+
+print(json.dumps(weather_check, indent=4, sort_keys=True))  #another function that puts the downloaded json data into a dictionary format 
+
+print(weather_check)
+city=[]
+ID=[]
+temp=[]
+humidity=[]
+wind=[]
+cloud_cover=[]
+city_weather = pd.DataFrame(columns=['city', 'ID', 'temp', 'humidity', 'wind', 'cloud cover'])
+
+
+for j in cities:
+    
+    url="http://api.openweathermap.org/data/2.5/weather?q="+j+api_key
+    
+    weather_check = requests.get(url).json()
+    if 'name'in weather_check:
+        
+        #lets pull all the data we need out of the json api pull- weather_check 
+
+        city.append(weather_check['name'])  
+        #temp.append = weather_check['main']['temp'] 
+        #humidity = weather_check['main']['humidity'] 
+        #wind = weather_check['wind']['speed']  #yes, accesses the 2nd key !!!
+        #cloud_cover = weather_check['clouds']['all']
+        #temp = (temp-273.15) * (9/5) + 32 #convert from Kelvin to Fahrenheit
+
+        #city_weather.iloc[1]=[city, ID, temp, humidity, wind, cloud_cover]
+        
+        # Add a new row at index k with values provided in list
+        #dfObj.loc['k'] = ['Smriti', 26, 'Bangalore', 'India']
+    
+'''        
+        print(f"Weather check- City of {city}")
+        print(f"Temperature (F): {temp}")
+        print(f"Windspeed (mph): {wind}")
+        print(f"% humidity: {humidity}")
+        print(f"% cloud cover: {cloud_cover}")
+        print()
+   '''     
+print(city)
